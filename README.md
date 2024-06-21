@@ -89,13 +89,7 @@ Here are some screenshots illustrating the app:
 ![Home Screen](assets/screenshot/2.png)
 
 ### Home
-![Home Screen](assets/screenshot/3.png)
-
-### Change name of Device
-![News Screen](assets/screenshot/4.png)
-
-### News
-![News Screen](assets/screenshot/5.png)
+![Home Screen](assets/screenshot/8.png)
 
 ### Profile Screen
 ![Profile Screen](assets/screenshot/6.png)
@@ -104,7 +98,3 @@ Here are some screenshots illustrating the app:
 ![Edit Profile Screen](assets/screenshot/7.png)
 
 
-```
- keytool -genkey -v -keystore flutter.keystore -alias firewisetech -keyalg RSA -keysize 2048 -validity 10000
- 
-```
