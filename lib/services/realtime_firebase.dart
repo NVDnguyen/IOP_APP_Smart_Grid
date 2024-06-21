@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:iot_app/models/devices.dart';
-import 'package:iot_app/models/system_log.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/provider/data_user.dart';
 
@@ -46,7 +45,7 @@ class DataFirebase {
           .ref()
           .child('Systems')
           .child(idSystem)
-          .child("name");
+          .child("idName");
       DataSnapshot snapshot = await systemRef.get();
       if (snapshot.exists) {
         return snapshot.value as String;
@@ -99,7 +98,7 @@ class DataFirebase {
     try {
       DatabaseReference systemRef =
           FirebaseDatabase.instance.ref().child('Systems').child(idSystem);
-      await systemRef.update({"name": data});
+      await systemRef.update({"idName": data});
       return true;
     } catch (e) {
       print("Error setting system name: ${e.toString()}");
@@ -107,75 +106,39 @@ class DataFirebase {
     }
   }
 
-// get all devices in a system
-  static Future<List<Device>> getAllDevices(String idSystem) async {
-    try {
-      List<Device> deviceList = [];
-      DatabaseReference devicesRef = FirebaseDatabase.instance
-          .ref()
-          .child('Systems')
-          .child(idSystem)
-          .child("devices");
+  // stream device
 
-      DataSnapshot snapshot = await devicesRef.get();
-      if (snapshot.exists) {
-        final Map<dynamic, dynamic> devicesMap =
-            snapshot.value as Map<dynamic, dynamic>;
-        devicesMap.forEach((key, value) {
-          deviceList.add(Device.fromJson(
-              idSystem, key, Map<String, dynamic>.from(value as Map)));
-        });
-      }
-      return deviceList;
-    } catch (e) {
-      print("Error getting devices: ${e.toString()}");
-      throw e;
-    }
-  }
+  static Stream<Device> getStreamDevice(String systemID) {
+    final StreamController<Device> controller = StreamController<Device>();
 
-  // get list log of a system
-  static Future<List<SystemLog>> getListLog(String systemID) async {
     try {
-      List<SystemLog> logs = [];
-      DatabaseReference logsRef = FirebaseDatabase.instance
+      final DatabaseReference deviceRef = FirebaseDatabase.instance
           .ref()
           .child('Systems')
           .child(systemID)
-          .child("log");
+          .child("Data");
 
-      DataSnapshot snapshot = await logsRef.get();
-      if (snapshot.exists) {
-        (snapshot.value as Map<dynamic, dynamic>).forEach((key, value) {
-          logs.add(SystemLog.fromJson(key, value));
-        });
-      }
-      return logs;
-    } catch (e) {
-      print("Error getting system logs: ${e.toString()}");
-      throw e;
-    }
-  }
-
-  // stream device
-  static Stream<Device> getStreamDevice(Device d) {
-    StreamController<Device> controller = StreamController<Device>();
-    try {
-      DatabaseReference deviceRef = FirebaseDatabase.instance
-          .ref()
-          .child('Systems')
-          .child(d.systemID)
-          .child("devices")
-          .child(d.id);
-      deviceRef.onValue.listen((event) {
-        if (event.snapshot.exists) {
-          controller.add(Device.fromJson(
-              d.systemID, d.id, event.snapshot.value as Map<Object?, Object?>));
+      deviceRef.onValue.listen((DatabaseEvent event) {
+        if (event.snapshot.value == null) {
+          controller.addError("Snapshot value is null");
+          return;
         }
+        try {
+          final Map<String, dynamic> data =
+              Map<String, dynamic>.from(event.snapshot.value as Map);
+          final Device device = Device.fromJson(data);
+          controller.add(device);
+        } catch (e) {
+          controller.addError("Error parsing device data: $e");
+        }
+      }, onError: (error) {
+        controller.addError("Firebase stream error: $error");
       });
     } catch (e) {
       print("Error streaming device: ${e.toString()}");
       controller.addError(e);
     }
+
     return controller.stream;
   }
 
@@ -194,74 +157,4 @@ class DataFirebase {
       print("Error remove system: ${e.toString()}");
     }
   }
-
-  // stream logs
-  static Stream<List<SystemLog>> getStreamLogs(List<String> idSystems) {
-    StreamController<List<SystemLog>> controller =
-        StreamController<List<SystemLog>>();
-    List<StreamSubscription> subscriptions = [];
-    Map<String, List<SystemLog>> systemLogsMap = {};
-
-    void handleError(error) {
-      if (!controller.isClosed) {
-        controller.addError(error);
-      }
-    }
-
-    for (String idSystem in idSystems) {
-      DatabaseReference deviceRef = FirebaseDatabase.instance
-          .ref()
-          .child('Systems')
-          .child(idSystem)
-          .child("log");
-
-      StreamSubscription subscription = deviceRef.onValue.listen((event) {
-        if (event.snapshot.exists) {
-          final Map<dynamic, dynamic> data =
-              event.snapshot.value as Map<dynamic, dynamic>;
-          final List<SystemLog> logs = data.entries
-              .map((entry) => SystemLog.fromJson(entry.key, entry.value))
-              .toList();
-
-          if (!controller.isClosed) {
-            systemLogsMap[idSystem] = logs;
-            // Flatten the map values into a single list
-            List<SystemLog> allLogs =
-                systemLogsMap.values.expand((logs) => logs).toList();
-            // Sort logs by timestamp in descending order
-            allLogs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-            controller.add(allLogs);
-          }
-        }
-      }, onError: handleError);
-
-      subscriptions.add(subscription);
-    }
-
-    controller.onCancel = () {
-      for (var subscription in subscriptions) {
-        subscription.cancel();
-      }
-    };
-
-    return controller.stream;
-  }
-
-  // update name of device
-  static Future<bool> setNameOfDevice(Device device, String data) async {
-    try {
-      DatabaseReference deviceRef = FirebaseDatabase.instance
-          .ref()
-          .child('Systems')
-          .child(device.systemID)
-          .child("devices")
-          .child(device.id);
-      await deviceRef.update({"name": data});
-      return true;
-    } catch (e) {
-      print("Error setting device name: ${e.toString()}");
-      return false;
-    }
-  }
-  
 }

@@ -49,7 +49,6 @@ class MyHomePage extends StatelessWidget {
             final prefs = snapshot.data;
             //print(prefs?.getString('userID'));
             final isLoggedIn = prefs?.getString('userID') ?? "1";
-
             if (isLoggedIn == "1") {
               return WellcomeScreen();
             } else {

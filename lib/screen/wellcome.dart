@@ -26,7 +26,7 @@ class _wellcomeScreenState extends State<WellcomeScreen> {
                   child: TitleTextWidget(text: "Wellcome to"),
                 ),
                 const SizedBox(
-                  child: TitleTextWidget(text: "FireWise"),
+                  child: TitleTextWidget(text: "IOP Group 1"),
                 ),
                 const SizedBox(
                   height: 250,

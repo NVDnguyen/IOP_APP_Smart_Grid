@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:iot_app/constants/properties.dart';
 import 'package:iot_app/models/devices.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
 
@@ -162,377 +160,116 @@ class BuildHomeWidgets {
     );
   }
 
-  static Widget buildInfoSensor(Device device, {required VoidCallback onTap}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            device.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            device.toString(),
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onTap,
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text("buttonText"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget buildDataCard(
-      String title, String description, String buttonText,
-      {required VoidCallback onTap}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onTap,
-            child: Text(buttonText),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget buildInfoSensor1(Device device,
-      {required VoidCallback onPress}) {
-    Stream<Device> deviceStream = DataFirebase.getStreamDevice(device);
+  static Widget buildDeviceWidget(String systemID) {
     return StreamBuilder<Device>(
-        stream: deviceStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          }
+      stream: DataFirebase.getStreamDevice(systemID),
+      builder: (BuildContext context, AsyncSnapshot<Device> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error.toString()}'));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: Text('No Data'));
+        }
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Data from snapshot
+        Device device = snapshot.data!;
 
-          if (!snapshot.hasData) {
-            return const Text('No device data');
-          }
-
-          final data = snapshot.data!;
-          return GestureDetector(
-            //onTap: onTap,
-            onLongPress: onPress,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: data.fire == FIRE_THRESHOLD
-                    ? Colors.white
-                    : const Color.fromARGB(255, 231, 128, 121),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
+        // Display device data
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: const Offset(0, 3),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        data.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                      ),
-
-                      const Spacer(),
-                      // warning
-                      // data.fire > FIRE_THRESHOLD ||
-                      //         data.smoke > SMOKE_THRESHOLD ||
-                      //         data.temp > TEMP_THRESHOLD
-                      //     ? const Icon(
-                      //         Icons.warning,
-                      //         color: Color.fromARGB(255, 214, 75, 10),
-                      //         size: 20,
-                      //       )
-                      //     : const SizedBox(),
-                      const SizedBox(
-                        width: 10,
-                      ),
-
-                      data.alarm == 1
-                          ? const Icon(
-                              Icons.online_prediction_outlined,
-                              color: Color.fromARGB(255, 75, 153, 77),
-                              size: 20,
-                            )
-                          : const Icon(
-                              Icons.online_prediction_outlined,
-                              color: Color.fromARGB(255, 126, 127, 128),
-                              size: 20,
-                            )
-                    ],
+                  Icon(Icons.bolt, color: Colors.yellow[700]),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Energy:',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildIconText(
-                        icon: FontAwesomeIcons.fire,
-                        label: 'Fire',
-                        value: data.fire.toString(),
-                        color: data.fire == FIRE_THRESHOLD
-                            ? Colors.green
-                            : Colors.red,
-                      ),
-                      _buildIconText(
-                        icon: FontAwesomeIcons.water,
-                        label: 'Humidity',
-                        value: data.hum.toString(),
-                        color: data.fire == FIRE_THRESHOLD
-                            ? Colors.blue
-                            : Color.fromARGB(255, 127, 164, 194),
-                      ),
-                      _buildIconText(
-                        icon: data.smoke < 50
-                            ? FontAwesomeIcons.cloudversify
-                            : FontAwesomeIcons.cloud,
-                        label: 'Smoke',
-                        value: data.smoke.toString(),
-                        color: data.smoke < SMOKE_THRESHOLD
-                            ? const Color.fromARGB(255, 188, 217, 236)
-                            : const Color.fromARGB(255, 139, 136, 136),
-                      ),
-                      _buildIconText(
-                        icon: FontAwesomeIcons.temperatureEmpty,
-                        label: 'Temperature',
-                        value: data.temp.toString(),
-                        color: data.temp < TEMP_THRESHOLD
-                            ? const Color.fromARGB(255, 114, 202, 224)
-                            : Colors.red,
-                      ),
-                    ],
+                  const Spacer(),
+                  Text(
+                    '${device.energy}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-            ),
-          );
-        });
-  }
-
-  static Widget _buildIconText(
-      {required IconData icon,
-      required String label,
-      required String value,
-      required Color color}) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 28),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade700,
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget buildInfoSensor2(Device device,
-      {required VoidCallback onPress}) {
-    Stream<Device> deviceStream = DataFirebase.getStreamDevice(device);
-    return StreamBuilder<Device>(
-        stream: deviceStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData) {
-            return const Text('No device data');
-          }
-
-          final data = snapshot.data!;
-          return Padding(
-            padding: const EdgeInsets.only(
-                bottom: 20), // Add 20 spacing at the bottom
-            child: GestureDetector(
-              onLongPress: onPress,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white, // Default background color
-                  borderRadius: BorderRadius.circular(8),
-                  border: data.fire > FIRE_THRESHOLD
-                      ? Border.all(
-                          color: const Color.fromARGB(255, 230, 171, 167),
-                          width: 2)
-                      : null, // Add red border if condition is met
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          data.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const Spacer(),
-                        const SizedBox(width: 10),
-                        data.alarm == 1
-                            ? const Icon(
-                                Icons.online_prediction_outlined,
-                                color: Color.fromARGB(255, 75, 153, 77),
-                                size: 20,
-                              )
-                            : const Icon(
-                                Icons.online_prediction_outlined,
-                                color: Color.fromARGB(255, 126, 127, 128),
-                                size: 20,
-                              )
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildIconText(
-                          icon: FontAwesomeIcons.fire,
-                          label: 'Fire',
-                          value: data.fire.toString(),
-                          color: data.fire == FIRE_THRESHOLD
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                        _buildIconText(
-                            icon: FontAwesomeIcons.water,
-                            label: 'Humidity',
-                            value: data.hum.toString(),
-                            color: Colors.blue),
-                        _buildIconText(
-                          icon: data.smoke < 50
-                              ? FontAwesomeIcons.cloudversify
-                              : FontAwesomeIcons.cloud,
-                          label: 'Smoke',
-                          value: data.smoke.toString(),
-                          color: data.smoke < SMOKE_THRESHOLD
-                              ? const Color.fromARGB(255, 188, 217, 236)
-                              : const Color.fromARGB(255, 139, 136, 136),
-                        ),
-                        _buildIconText(
-                          icon: FontAwesomeIcons.temperatureEmpty,
-                          label: 'Temperature',
-                          value: data.temp.toString(),
-                          color: data.temp < TEMP_THRESHOLD
-                              ? const Color.fromARGB(255, 114, 202, 224)
-                              : Colors.red,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.flash_on, color: Colors.orange),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Voltage:',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${device.vol}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-            ),
-          );
-        });
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.electrical_services, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Amperage:',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${device.ampe}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.power, color: Colors.green),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Wattage:',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${device.wat}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

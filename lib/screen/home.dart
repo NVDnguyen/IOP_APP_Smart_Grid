@@ -4,14 +4,13 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:iot_app/constants/properties.dart';
+import 'package:flutter/widgets.dart';
 import 'package:iot_app/models/devices.dart';
 import 'package:iot_app/screen/profile.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
-import 'package:iot_app/widgets/Dashboard/dashboard_widgets.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/provider/data_user.dart';
-import 'package:iot_app/widgets/Dashboard/news_stream.dart';
+import 'package:iot_app/widgets/Dashboard/dashboard_widgets.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -31,14 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
   late String helloSTR = "";
 
   // Create List of SystemLog Objects
-
-  List<Device> lDevice = [];
   List<Widget> wNoSystem = [];
   List<String> listIdSys = [];
-
-  List<Widget> wSystems = [];
   List<Widget> wDevices = [];
-  List<Widget> wLogs = [];
+  List<Widget> wSystems = [];
+
   String selectedSystem = "";
 
   @override
@@ -81,13 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
         SharedPreferencesProvider.setDataUser(user);
       }
       List<String> listSystems = userNew.getSystemIDs();
-      List<Widget> wListSt = [];
-
+      List<Widget> wListSt = []; //
       // parallel
       List<Future> futures = listSystems.map((e) async {
-        var devicesFuture = DataFirebase.getAllDevices(e);
         var systemNameFuture = DataFirebase.getNameOfSystem(e);
-        return Future.wait([devicesFuture, systemNameFuture, Future.value(e)]);
+        return Future.wait([systemNameFuture, Future.value(e)]);
       }).toList();
 
       // wait for all done
@@ -95,93 +89,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // process results
       for (var result in results) {
-        List<Device> dvc = result[0];
-        String systemName = result[1];
-        String idSystem = result[2];
+        String systemName = result[0];
+        String idSystem = result[1];
 
         wListSt.add(
           BuildHomeWidgets.buildSystemCard(
             idSystem == selectedSystem,
             systemName,
-            //'https://i.imgur.com/jFoufpl.jpeg',
             'https://img.freepik.com/premium-photo/concept-home-devices-multiple-houses-conected-networked_1059430-54450.jpg',
             onTap: () {
+              wDevices.clear();
               //system ontap
               setState(() {
                 isHome = false;
                 //fetchUserData();
                 buildSystemList();
                 selectedSystem = idSystem;
-                wDevices = [];
-                // build device
-                for (var device in dvc) {
-                  Widget deviceWidget =
-                      BuildHomeWidgets.buildInfoSensor2(device, onPress: () {
-                    // change name
-                    final TextEditingController newNameDevice =
-                        TextEditingController();
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(height: 16),
-                              TextField(
-                                controller: newNameDevice,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: "New name",
-                                  prefixIcon:
-                                      Icon(Icons.devices_other_outlined),
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                updateDeviceName(device, newNameDevice.text);
-                                setState(() {
-                                  fetchUserData();
-                                  buildSystemList();
-                                });
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Next'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  });
-                  if (device.fire > FIRE_THRESHOLD) {
-                    wDevices.insert(0, deviceWidget);
-                  } else {
-                    wDevices.add(deviceWidget);
-                  }
-                }
+                wDevices.add(BuildHomeWidgets.buildDeviceWidget(idSystem));
               });
             },
-
             onLongPress: () {
               _settingSystem(idSystem);
             },
           ),
         );
       }
+      //
 
       setState(() {
         wListSt.isEmpty ? isNotHaveSystem = true : isNotHaveSystem = false;
         wSystems = wListSt;
-
         wNoSystem = [
           BuildHomeWidgets.buildInfoCard(
               "Bạn chưa lắp đặt hệ thống thiết bị nào",
@@ -204,20 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final TextEditingController systemIDcontroller = TextEditingController();
     final TextEditingController systemKeycontroller = TextEditingController();
-    List<Widget> wHome = [
-      Column(
-        children: [
-          Container(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.9),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [buildInfoLogs(idSystem: listIdSys)],
-            ),
-          ),
-        ],
-      ),
-    ];
+    List<Widget> wHome = [];
     return isDataLoaded
         ? Scaffold(
             backgroundColor: const Color(0xFFF7F8FA),
@@ -365,23 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> updateDeviceName(Device device, String text) async {
-    bool isAdmin = user.isAdmin(device.systemID);
-    try {
-      if (isAdmin) {
-        bool status = await DataFirebase.setNameOfDevice(device, text);
-        if (status) {
-          showSnackBar(context, "Change Success");
-        } else {
-          showSnackBar(context, "Cannot change");
-        }
-      } else {
-        showSnackBar(context, "Dont have permission");
-      }
-    } catch (e) {
-      showSnackBar(context, "Cannot change");
-    }
-  }
+  Future<void> updateDeviceName(Device device, String text) async {}
 
   Future<void> _launchUrl(Uri _url) async {
     if (!await launchUrl(_url)) {
@@ -425,7 +333,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   print(idSystem);
                   DataFirebase.removeSystem(idSystem);
                   setState(() {
-                    wDevices = [];
                     fetchUserData();
                     buildSystemList();
                   });

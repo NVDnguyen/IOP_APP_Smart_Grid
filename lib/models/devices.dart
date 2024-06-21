@@ -1,40 +1,27 @@
-import 'dart:ffi';
-
 class Device {
-  final String id;
-  final String name;
-  final double fire;
-  final double hum;
-  final double smoke;
-  final double temp;
-  final double alarm;
-  final String systemID;
+  final int energy;
+  final int vol;
+  final int ampe;
+  final int wat;
 
   Device({
-    required this.id,
-    required this.name,
-    required this.fire,
-    required this.hum,
-    required this.smoke,
-    required this.temp,
-    required this.alarm,
-    required this.systemID,
+    required this.energy,
+    required this.vol,
+    required this.ampe,
+    required this.wat,
   });
-  factory Device.fromJson(
-      String systemID, String id, Map<dynamic, dynamic> json) {
+
+  factory Device.fromJson(Map<String, dynamic> json) {
     return Device(
-      id: id,
-      name: json['name'] as String? ?? '',
-      fire: (json['fire'] as num?)?.toDouble() ?? 0.0,
-      hum: (json['hum'] as num?)?.toDouble() ?? 0.0,
-      smoke: (json['smoke'] as num?)?.toDouble() ?? 0.0,
-      temp: (json['temp'] as num?)?.toDouble() ?? 0.0,
-      alarm: (json['alarm'] as num?)?.toDouble() ?? 0.0,
-      systemID: systemID,
+      energy: json['Energy'] as int? ?? 0,
+      vol: json['Vol'] as int? ?? 0,
+      ampe: json['ampe'] as int? ?? 0,
+      wat: json['wat'] as int? ?? 0,
     );
   }
+
   @override
   String toString() {
-    return 'Device { id: $id, name: $name, fire: $fire, hum: $hum, smoke: $smoke, temp: $temp, systemID: $systemID }';
+    return 'DeviceData { energy: $energy, vol: $vol, ampe: $ampe, wat: $wat }';
   }
 }

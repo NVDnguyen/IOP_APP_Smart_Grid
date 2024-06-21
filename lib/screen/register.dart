@@ -85,7 +85,7 @@ class _registerScreenState extends State<RegisterScreen> {
                                 labelText: "User Name",
                                 textEditingController:
                                     _userNameEditingController,
-                                icon: Icons.email_outlined,
+                                icon: Icons.person_pin_outlined,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter user name';
