@@ -16,24 +16,23 @@ class SharedPreferencesProvider {
 
   static Future<Users> getDataUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userID');
+    String? userId = prefs.getString('userID1');
     String? userName = prefs.getString('userName');
     String? email = prefs.getString('email');
     String? address = prefs.getString('address');
-    String? image = prefs.getString('image'); 
+    String? image = prefs.getString('image');
 
     if (userId != null &&
         userName != null &&
         email != null &&
         address != null &&
         image != null) {
-     
       return Users.sharedPreferences(
         userID: userId,
         username: userName,
         email: email,
         address: address,
-        image: image,      
+        image: image,
       );
     } else {
       throw Exception("Failed to fetch user data from SharedPreferences");
@@ -43,11 +42,11 @@ class SharedPreferencesProvider {
   static Future<bool> setDataUser(Users user) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userID', user.userID);
+      await prefs.setString('userID1', user.userID);
       await prefs.setString('userName', user.username);
       await prefs.setString('email', user.email);
       await prefs.setString('address', user.address);
-      await prefs.setString('image', user.image);     
+      await prefs.setString('image', user.image);
       return true;
     } catch (e) {
       print(e.toString());
@@ -63,11 +62,11 @@ class SharedPreferencesProvider {
   static Future<bool> clearDataUser() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userID', "");
+      await prefs.setString('userID1', "");
       await prefs.setString('userName', "");
       await prefs.setString('email', "");
       await prefs.setString('address', "");
-      await prefs.setString('image', "");   
+      await prefs.setString('image', "");
       clearData();
       return true;
     } catch (e) {

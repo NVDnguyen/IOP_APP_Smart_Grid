@@ -48,11 +48,11 @@ class MyHomePage extends StatelessWidget {
             }
             final prefs = snapshot.data;
             //print(prefs?.getString('userID'));
-            final isLoggedIn = prefs?.getString('userID') ?? "1";
+            final isLoggedIn = prefs?.getString('userID1') ?? "1";
             if (isLoggedIn == "1") {
               return WellcomeScreen();
             } else {
-              return Layout();
+              return WellcomeScreen();
             }
           } catch (e) {
             return WellcomeScreen();

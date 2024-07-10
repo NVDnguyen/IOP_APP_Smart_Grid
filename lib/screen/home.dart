@@ -4,9 +4,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:iot_app/Layout/layout.dart';
 import 'package:iot_app/models/devices.dart';
 import 'package:iot_app/screen/profile.dart';
+import 'package:iot_app/screen/wellcome.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/provider/data_user.dart';
@@ -142,6 +143,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final TextEditingController systemIDcontroller = TextEditingController();
     final TextEditingController systemKeycontroller = TextEditingController();
     List<Widget> wHome = [];
+
+    Future.delayed(const Duration(minutes: 30), () {
+      if (!isDataLoaded) {
+        // Check if the data is still not loaded
+        showSnackBar(context, "Data Error");
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  WellcomeScreen()), // Redirect to TimeoutScreen
+          (Route<dynamic> route) => false, // Remove all routes below
+        );
+      }
+    });
     return isDataLoaded
         ? Scaffold(
             backgroundColor: const Color(0xFFF7F8FA),

@@ -205,11 +205,11 @@ class _registerScreenState extends State<RegisterScreen> {
           address: address);
       // store in firebase
       if (await _auth.registerUser(user)) {
-        _showEmailVerificationDialog(user);
+        //_showEmailVerificationDialog(user);
         print("Register successfully");
         // showSnackBar(context, "Register Successfully");
-        // Navigator.pushReplacement(context,
-        //     MaterialPageRoute(builder: (context) => const LoginScreen()));
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()));
       } else {
         print("Register Fail");
         showSnackBar(context, "Register Fail");

@@ -68,6 +68,8 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    flavorDimensions "app"
+
 }
 
 flutter {

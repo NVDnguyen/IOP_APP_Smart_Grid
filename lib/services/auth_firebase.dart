@@ -27,7 +27,7 @@ class AuthService {
       );
       User? user = userCredential.user;
 
-      if (user != null && user.emailVerified) {
+      if (user != null) {
         // Fetch data from Realtime Database
         DatabaseReference userRef = FirebaseDatabase.instance
             .ref()
@@ -78,7 +78,7 @@ class AuthService {
         String userId = firebaseUser.uid;
 
         // Send email verification
-        await firebaseUser.sendEmailVerification();
+        //await firebaseUser.sendEmailVerification();
 
         // Save user information to Realtime Database
         DatabaseReference userRef =
