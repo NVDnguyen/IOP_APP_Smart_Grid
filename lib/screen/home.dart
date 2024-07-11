@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:iot_app/Layout/layout.dart';
 import 'package:iot_app/models/devices.dart';
 import 'package:iot_app/screen/profile.dart';
 import 'package:iot_app/screen/wellcome.dart';
@@ -58,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // buid dash board
       await buildSystemList();
       setState(() {
+        DataFirebase.addSystem("ESP_3470400_1458270", "", user);
         listIdSys = user.getSystemIDs();
         helloSTR = "Hi, " + user.username + " !";
 

@@ -45,7 +45,7 @@ class DataFirebase {
           .ref()
           .child('Systems')
           .child(idSystem)
-          .child("idName");
+          .child("name");
       DataSnapshot snapshot = await systemRef.get();
       if (snapshot.exists) {
         return snapshot.value as String;
@@ -68,6 +68,7 @@ class DataFirebase {
           .child("Key");
       DataSnapshot snapshot = await systemRef.get();
       // if no exception throw, idSystem exist
+      print(snapshot.toString());
       if (snapshot.exists) {
         DatabaseReference r = FirebaseDatabase.instance
             .ref()

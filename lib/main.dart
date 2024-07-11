@@ -52,7 +52,7 @@ class MyHomePage extends StatelessWidget {
             if (isLoggedIn == "1") {
               return WellcomeScreen();
             } else {
-              return WellcomeScreen();
+              return Layout();
             }
           } catch (e) {
             return WellcomeScreen();

@@ -1,8 +1,8 @@
 class Device {
-  final int energy;
-  final int vol;
-  final int ampe;
-  final int wat;
+  final double energy;
+  final double vol;
+  final double ampe;
+  final double wat;
 
   Device({
     required this.energy,
@@ -11,17 +11,28 @@ class Device {
     required this.wat,
   });
 
+  // Hàm chuyển đổi dữ liệu về kiểu double
+  static double _toDouble(dynamic value) {
+    if (value is int) {
+      return value.toDouble();
+    } else if (value is double) {
+      return value;
+    } else {
+      return 0.0;
+    }
+  }
+
   factory Device.fromJson(Map<String, dynamic> json) {
     return Device(
-      energy: json['Energy'] as int? ?? 0,
-      vol: json['Vol'] as int? ?? 0,
-      ampe: json['ampe'] as int? ?? 0,
-      wat: json['wat'] as int? ?? 0,
+      energy: _toDouble(json['Energy']),
+      vol: _toDouble(json['Vol']),
+      ampe: _toDouble(json['ampe']),
+      wat: _toDouble(json['wat']),
     );
   }
 
   @override
   String toString() {
-    return 'DeviceData { energy: $energy, vol: $vol, ampe: $ampe, wat: $wat }';
+    return 'Device { energy: $energy, vol: $vol, ampe: $ampe, wat: $wat }';
   }
 }
